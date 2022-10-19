@@ -1,0 +1,40 @@
+name: Deploy Repos
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  tf_fmt:
+    name: Deploy Repo
+    runs-on: ubuntu-latest
+    
+    steps:
+
+    - name: Checkout Repo
+      uses: actions/checkout@v3
+
+    - name: Terraform Init
+      uses: hashicorp/setup-terraform@v2
+      
+    - name: Terraform fmt
+      run: terraform fmt -check
+      continue-on-error: true
+
+    - name: Terraform Init
+      id: init
+      run: terraform init
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+
+    - name: Terraform Plan
+      id: plan
+      run: terraform plan -no-color
+    
+    - name: Terraform Apply
+      id: apply
+      run: terraform apply -var token=${{ secrets.YOUR_PAT_SAVED_AS_GITHUB_REPO_SECRET }} --auto-approve
